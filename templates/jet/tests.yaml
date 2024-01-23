@@ -1,0 +1,230 @@
+- name: defaultSettings
+  repetitions: -1
+  def: &defaults
+    duration: 120s
+    repetitions: 1
+    clients: 9
+    members: 1
+    driver: hazelcast5
+    version: maven=5.4.0-SNAPSHOT
+    client_args: >
+      -Xms3g
+      -Xmx3g
+      --add-modules java.se 
+      --add-exports java.base/jdk.internal.ref=ALL-UNNAMED 
+      --add-opens java.base/java.lang=ALL-UNNAMED 
+      --add-opens java.base/sun.nio.ch=ALL-UNNAMED 
+      --add-opens java.management/sun.management=ALL-UNNAMED 
+      --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
+    member_args: >
+      -Xms3g
+      -Xmx3g
+      --add-modules java.se 
+      --add-exports java.base/jdk.internal.ref=ALL-UNNAMED 
+      --add-opens java.base/java.lang=ALL-UNNAMED 
+      --add-opens java.base/sun.nio.ch=ALL-UNNAMED 
+      --add-opens java.management/sun.management=ALL-UNNAMED 
+      --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
+      -Xlog:gc:file=gc.log:utctime,pid,tags:filecount=32,filesize=64m
+      -Dhazelcast.clientengine.query.thread.count=50
+      -Dhazelcast.operation.generic.thread.count=50
+      -XX:+FlightRecorder
+      -XX:StartFlightRecording=duration=10m,filename=recording.jfr
+      -XX:+UnlockDiagnosticVMOptions
+      -XX:+DebugNonSafepoints
+    loadgenerator_hosts: loadgenerators
+    node_hosts: nodes
+    verify_enabled: False
+    performance_monitor_interval_seconds: 1
+    warmup_seconds: 15
+    cooldown_seconds: 5
+
+##############
+# IMap via SQL
+- name: imap-select-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      entryCount: 200000
+      imapSelectProb: 1
+      threadCount: 40
+      ratePerSecond: 50000
+      rampupSeconds: 100
+
+- name: imap-select-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      entryCount: 200000
+      threadCount: 40
+      imapSelectProb: 1
+
+- name: imap-update-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      entryCount: 200000
+      imapUpdateProb: 1
+      threadCount: 40
+      ratePerSecond: 50000
+      rampupSeconds: 100
+
+- name: imap-update-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      threadCount: 40
+      entryCount: 200000
+      imapUpdateProb: 1
+
+##############
+# IMap directly
+- name: get-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      entryCount: 200000
+      imapGetProb: 1
+      threadCount: 40
+      ratePerSecond: 100000
+      rampupSeconds: 100
+
+- name: get-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: imap
+      threadCount: 40
+      entryCount: 200000
+      imapGetProb: 1
+
+##############
+# SQLite via JDBC connector
+- name: sqlite-jdbc-select-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      selectProb: 1
+      threadCount: 40
+      ratePerSecond: 20000
+      rampupSeconds: 100
+
+- name: sqlite-jdbc-select-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      threadCount: 40
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      selectProb: 1
+
+- name: sqlite-jdbc-update-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      updateProb: 1
+      threadCount: 40
+      ratePerSecond: 20000
+      rampupSeconds: 100
+
+- name: sqlite-jdbc-update-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      threadCount: 40
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      updateProb: 1
+
+##############
+# SQLite via passthrough
+- name: sqlite-lite-select-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      useLite: True
+      selectProb: 1
+      threadCount: 40
+      ratePerSecond: 50000
+      rampupSeconds: 100
+
+- name: sqlite-lite-select-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      threadCount: 40
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      useLite: True
+      selectProb: 1
+
+- name: sqlite-lite-update-stress
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      useLite: True
+      updateProb: 1
+      threadCount: 40
+      ratePerSecond: 20000
+      rampupSeconds: 100
+
+- name: sqlite-lite-update-throughput
+  <<: *defaults
+  test:
+    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLReadWriteBenchmark
+      name: sqlitetable
+      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+      threadCount: 40
+      maximumPoolSize: 200
+      entryCount: 200000
+      arraySize: 20
+      useLite: True
+      updateProb: 1
+
+# these tests run on client only, not member!
+#- name: read_only_direct
+#  <<: *defaults
+#  repetitions: -1
+#  test:
+#    - class: com.hazelcast.simulator.tests.map.sql.jdbc.SQLiteDirectReadWriteBenchmark
+#      name: sqlitetable
+#      jdbcUrl: jdbc:sqlite:sqlite.db?journal_mode=wal&busy_timeout=100000
+#      threadCount: 40
+#      entryCount: 200000
+#      selectProb: 1
+#      updateProb: -1
+#      arraySize: 20

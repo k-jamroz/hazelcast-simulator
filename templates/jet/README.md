@@ -16,6 +16,11 @@ inventory install java
 inventory install simulator
 ```
 
+Install SQLite:
+```
+wget https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.44.1.0/sqlite-jdbc-3.44.1.0.jar
+```
+
 If you want to get the best performance for your environment
 ```shell
 inventory tune

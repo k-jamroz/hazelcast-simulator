@@ -37,7 +37,7 @@
     </serialization>
 
     <jet enabled="true" resource-upload-enabled="false">
-        <!--    <cooperative-thread-count>8</cooperative-thread-count> -->
+        <cooperative-thread-count>2</cooperative-thread-count>
         <!-- time spacing of flow-control (ack) packets -->
         <flow-control-period>100</flow-control-period>
         <!-- number of backup copies to configure for Hazelcast IMaps used internally in a Jet job -->
