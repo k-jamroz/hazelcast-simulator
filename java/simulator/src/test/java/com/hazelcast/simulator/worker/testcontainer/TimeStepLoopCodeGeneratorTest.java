@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
 
 public class TimeStepLoopCodeGeneratorTest {
@@ -102,9 +104,14 @@ public class TimeStepLoopCodeGeneratorTest {
         var testCase = new TestCase("someTest", properties);
         var model = new TimeStepModel(TestClass1.class, new PropertyBinding(testCase));
 
-        var generatedCode = codeGenerator.createJavaFileObject(model.getTestClass().getName(), "", EmptyMetronome.class,
-                model, null, 1000, 1000, false, sequential);
+        var generatedCode = codeGenerator.createJavaFileObject(model.getTestClass().getSimpleName() + "Loop", "", EmptyMetronome.class,
+                model, null, 0, 0, false, sequential);
         log.info("generated code: {}", generatedCode.getCharContent(false));
+
+        assertThatNoException()
+                .as("generated code should be valid")
+                .isThrownBy(() -> codeGenerator.compile(ToolProvider.getSystemJavaCompiler(), generatedCode, model.getTestClass().getName()));
+
         return generatedCode.getCharContent(false);
     }
 }

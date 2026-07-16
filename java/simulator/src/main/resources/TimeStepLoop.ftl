@@ -46,7 +46,7 @@ public class ${className} extends TimeStepLoop {
         final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger, ${logRateMs});
 </#if>
 
-<#if timeStepMethods?size gt 1>
+<#if timeStepMethods?size gt 1 && !sequential??>
         final byte[] probs  = this.timeStepProbabilities;
 </#if>
 
